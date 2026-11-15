@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Every color, font, radius, shadow and easing used by
+ * components must come from here — never hardcode values in components.
+ */
+@theme {
+}
