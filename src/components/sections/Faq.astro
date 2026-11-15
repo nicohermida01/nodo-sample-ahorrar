@@ -1,0 +1,111 @@
+---
+import { Icon } from 'astro-icon/components';
+import { site } from '../../content/site';
+import SectionHeader from '../ui/SectionHeader.astro';
+
+const { faq } = site;
+---
+
+<section id="preguntas" class="py-section" aria-labelledby="preguntas-title">
+  <div class="container-page grid gap-12 lg:grid-cols-12 lg:gap-8">
+    <SectionHeader id="preguntas-title" heading={faq.heading} intro={faq.intro} class="lg:col-span-4" />
+
+    <div class="faq lg:col-span-8 lg:col-start-5" data-reveal="fade">
+      {
+        faq.items.map((item) => (
+          <details class="faq-item" name="faq">
+            <summary class="faq-question">
+              <span>{item.question}</span>
+              <span class="faq-chevron" aria-hidden="true">
+                <Icon name="lucide:chevron-down" />
+              </span>
+            </summary>
+            <div class="faq-answer">
+              <p>{item.answer}</p>
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    border-top: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+  }
+
+  .faq-item {
+    border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+  }
+
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.375rem 0.25rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1.6vw, 1.3125rem);
+    font-weight: 620;
+    letter-spacing: -0.015em;
+    color: var(--color-ink);
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-question:hover {
+    color: var(--color-brand-strong);
+  }
+
+  .faq-chevron {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background-color: var(--color-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 10%, transparent);
+    color: var(--color-ink);
+    transition:
+      transform var(--duration-base) var(--ease-out-expo),
+      background-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .faq-chevron :global(svg) {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .faq-item[open] .faq-chevron {
+    transform: rotate(180deg);
+    background-color: var(--color-brand-soft);
+  }
+
+  .faq-answer {
+    max-width: 44rem;
+    padding: 0 3.5rem 1.5rem 0.25rem;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-neutral-600);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .faq-item[open] .faq-answer {
+      animation: faq-open var(--duration-base) var(--ease-out-expo);
+    }
+  }
+
+  @keyframes faq-open {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+</style>

@@ -1,0 +1,214 @@
+---
+/**
+ * Hero signature screen. Markup is the FINAL state (expense logged);
+ * CSS animations play the two taps from the initial state on load.
+ * Reduced motion simply shows this final state.
+ */
+import { Icon } from 'astro-icon/components';
+import '../../../styles/screens.css';
+import { site } from '../../../content/site';
+import { formatMoney } from '../../../lib/format';
+import StatusBar from './StatusBar.astro';
+
+const demo = site.hero.demo;
+const newRow = { label: demo.description, envelope: demo.envelope, amount: demo.amount };
+---
+
+<div class="scr hero-scr">
+  <StatusBar />
+
+  <div>
+    <p class="scr-overline">{demo.monthLabel}</p>
+    <p class="scr-title">{demo.screenTitle}</p>
+  </div>
+
+  <div class="scr-card hero-amount">
+    <span class="scr-muted">{demo.description}</span>
+    <span class="scr-amount hero-amount-value">{formatMoney(demo.amount)}</span>
+  </div>
+
+  <div class="hero-pick">
+    <p class="scr-muted hero-question">{demo.question}</p>
+    <div class="scr-chips">
+      {
+        demo.chips.map((chip, index) => (
+          <span class="scr-chip" data-selected={index === demo.selectedChip ? '' : undefined}>
+            {chip}
+            {index === demo.selectedChip && (
+              <>
+                <span class="scr-chip-on hero-chip-on">{chip}</span>
+                <span class="hero-tap hero-tap-chip" />
+              </>
+            )}
+          </span>
+        ))
+      }
+    </div>
+  </div>
+
+  <span class="scr-btn hero-confirm">
+    {demo.confirmLabel}
+    <span class="hero-tap hero-tap-confirm"></span>
+  </span>
+
+  <span class="hero-toast">
+    <Icon name="lucide:circle-check" />
+    {demo.toast}
+  </span>
+
+  <div class="scr-card hero-list">
+    <p class="scr-overline hero-list-title">{demo.recentTitle}</p>
+    <div class="scr-row hero-row-new">
+      <span class="scr-row-label">
+        {newRow.label}
+        <small>{newRow.envelope}</small>
+      </span>
+      <span class="scr-num">{formatMoney(-newRow.amount)}</span>
+    </div>
+    {
+      demo.recent.map((row) => (
+        <div class="scr-row">
+          <span class="scr-row-label">
+            {row.label}
+            <small>{row.envelope}</small>
+          </span>
+          <span class="scr-num">{formatMoney(-row.amount)}</span>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .hero-scr {
+    --t-chip: 1.6s;
+    --t-confirm: 2.35s;
+    --t-done: 2.7s;
+  }
+
+  .hero-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+    padding: 0.9em 1em 1em;
+  }
+
+  .hero-amount-value {
+    font-size: 2.6em;
+  }
+
+  .hero-pick {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .hero-question {
+    font-size: 0.85em;
+  }
+
+  .hero-confirm {
+    flex: none;
+  }
+
+  .hero-tap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.6em;
+    height: 2.6em;
+    margin: -1.3em 0 0 -1.3em;
+    border-radius: 9999px;
+    background-color: color-mix(in oklab, var(--color-brand) 55%, transparent);
+    box-shadow: 0 0 0 0.2em color-mix(in oklab, var(--color-brand) 25%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hero-toast {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    gap: 0.4em;
+    padding: 0.45em 0.9em;
+    border-radius: 9999px;
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  .hero-toast :global(svg) {
+    width: 1.15em;
+    height: 1.15em;
+  }
+
+  .hero-list {
+    padding: 0.4em 1em;
+  }
+
+  .hero-list-title {
+    padding-top: 0.5em;
+  }
+
+  .hero-row-new .scr-num {
+    color: var(--color-brand-strong);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-chip-on {
+      animation: hero-on 260ms var(--ease-out-expo) var(--t-chip) both;
+    }
+
+    .hero-tap-chip {
+      animation: hero-tap 650ms var(--ease-out-expo) calc(var(--t-chip) - 120ms) both;
+    }
+
+    .hero-confirm {
+      animation: hero-press 380ms var(--ease-out-expo) var(--t-confirm) both;
+    }
+
+    .hero-tap-confirm {
+      animation: hero-tap 650ms var(--ease-out-expo) calc(var(--t-confirm) - 120ms) both;
+    }
+
+    .hero-toast,
+    .hero-row-new {
+      animation: hero-arrive 600ms var(--ease-out-expo) var(--t-done) both;
+    }
+  }
+
+  @keyframes hero-on {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes hero-tap {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    35% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.7);
+    }
+  }
+
+  @keyframes hero-press {
+    40% {
+      transform: scale(0.95);
+    }
+  }
+
+  @keyframes hero-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(0.6em);
+    }
+  }
+</style>

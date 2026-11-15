@@ -1,0 +1,88 @@
+---
+import '../../../styles/screens.css';
+import { site } from '../../../content/site';
+import { formatMoney, ratio } from '../../../lib/format';
+import StatusBar from './StatusBar.astro';
+
+const screen = site.howItWorks.setupScreen;
+const assigned = screen.envelopes.reduce((sum, envelope) => sum + envelope.amount, 0);
+const unassigned = screen.income - assigned;
+---
+
+<div class="scr">
+  <StatusBar />
+  <p class="scr-title">{screen.title}</p>
+
+  <div class="scr-card setup-income">
+    <span class="scr-muted">{screen.incomeLabel}</span>
+    <span class="scr-amount setup-income-value">{formatMoney(screen.income)}</span>
+    <span class="scr-bar"><span style={`--value:${ratio(assigned, screen.income)}`}></span></span>
+  </div>
+
+  <div class="scr-card setup-list">
+    {
+      screen.envelopes.map((envelope) => (
+        <div class="scr-row">
+          <span class="setup-name">
+            <span class="setup-dot" />
+            {envelope.name}
+          </span>
+          <span class="scr-num">{formatMoney(envelope.amount)}</span>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="setup-unassigned">
+    <span class="scr-muted">{screen.unassignedLabel}</span>
+    <span class="scr-num setup-left">{formatMoney(unassigned)}</span>
+  </div>
+
+  <span class="scr-btn setup-action">{screen.action}</span>
+</div>
+
+<style>
+  .setup-income {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45em;
+    padding: 0.9em 1em 1em;
+  }
+
+  .setup-income-value {
+    font-size: 2.1em;
+  }
+
+  .setup-list {
+    padding: 0.2em 1em;
+  }
+
+  .setup-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    font-weight: 560;
+  }
+
+  .setup-dot {
+    width: 0.65em;
+    height: 0.8em;
+    border-radius: 0.15em;
+    background-color: var(--color-brand-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 35%, transparent);
+  }
+
+  .setup-unassigned {
+    display: flex;
+    justify-content: space-between;
+    padding-inline: 0.25em;
+  }
+
+  .setup-left {
+    color: var(--color-accent-strong);
+  }
+
+  .setup-action {
+    margin-top: auto;
+  }
+</style>

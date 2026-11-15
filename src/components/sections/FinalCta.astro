@@ -1,0 +1,68 @@
+---
+import { site } from '../../content/site';
+import Envelope from '../ui/Envelope.astro';
+import StoreBadges from '../ui/StoreBadges.astro';
+
+const { finalCta } = site;
+---
+
+<section id="descargar" class="cta" aria-labelledby="descargar-title">
+  <div class="container-page">
+    <div class="cta-panel">
+      <div class="cta-copy" data-reveal>
+        <h2 id="descargar-title" class="font-display text-title text-ink">{finalCta.heading}</h2>
+        <p class="max-w-[30rem] text-lead text-neutral-700">{finalCta.body}</p>
+        <StoreBadges class="pt-2" />
+      </div>
+      <div class="cta-art" aria-hidden="true" data-reveal style="--reveal-delay:1">
+        <Envelope envelope={finalCta.envelope} class="cta-envelope" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: var(--spacing-section);
+  }
+
+  .cta-panel {
+    position: relative;
+    display: grid;
+    gap: 3rem;
+    padding: clamp(2rem, 6vw, 5rem);
+    overflow: hidden;
+    border-radius: calc(var(--radius-panel) * 1.25);
+    border: 1px solid color-mix(in oklab, var(--color-brand) 20%, transparent);
+    background-color: var(--color-brand-tint);
+    background-image:
+      radial-gradient(60% 80% at 88% 30%, color-mix(in oklab, var(--color-brand) 42%, transparent), transparent 70%),
+      radial-gradient(50% 70% at 70% 110%, color-mix(in oklab, var(--color-brand-soft) 100%, transparent), transparent 70%),
+      radial-gradient(40% 60% at 0% 0%, var(--color-surface), transparent 70%);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @media (min-width: 64rem) {
+    .cta-panel {
+      grid-template-columns: 1.3fr 1fr;
+      align-items: center;
+    }
+  }
+
+  .cta-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .cta-art {
+    display: grid;
+    place-items: center;
+  }
+
+  .cta-art :global(.cta-envelope) {
+    width: min(100%, 22rem);
+    rotate: 4deg;
+  }
+</style>

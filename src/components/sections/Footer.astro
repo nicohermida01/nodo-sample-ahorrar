@@ -1,0 +1,96 @@
+---
+import { site } from '../../content/site';
+import Logo from '../ui/Logo.astro';
+
+const { footer } = site;
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container-page py-16 md:py-20">
+    <div class="grid gap-12 md:grid-cols-12">
+      <div class="flex flex-col items-start gap-4 md:col-span-5">
+        <Logo tone="paper" />
+        <p class="max-w-[22rem] text-neutral-300">{footer.blurb}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
+        {
+          footer.columns.map((column, index) => (
+            <nav aria-labelledby={`footer-col-${index}`}>
+              <h2 id={`footer-col-${index}`} class="tag-label text-neutral-400">
+                {column.title}
+              </h2>
+              <ul class="mt-4 flex flex-col gap-3">
+                {column.links.map((link) => (
+                  <li>
+                    {link.placeholder ? (
+                      <span class="footer-placeholder" aria-disabled="true" data-placeholder>
+                        {link.label}
+                        <span class="footer-placeholder-tag tag-label">{footer.placeholderTag}</span>
+                      </span>
+                    ) : (
+                      <a href={link.href} class="footer-link link-reveal">
+                        {link.label}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {year} {site.name}. {footer.rights}</p>
+      <p>{footer.disclaimer}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .footer-link {
+    color: var(--color-neutral-200);
+    transition: color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .footer-link:hover {
+    color: var(--color-paper);
+  }
+
+  /* Template placeholder: visible, muted, not a link until it has a destination. */
+  .footer-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-neutral-400);
+    cursor: default;
+  }
+
+  .footer-placeholder-tag {
+    padding: 0.25rem 0.375rem;
+    border-radius: var(--radius-tag);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-paper) 22%, transparent);
+    color: var(--color-neutral-300);
+    font-size: 0.5625rem;
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-paper) 14%, transparent);
+    font-size: 0.8125rem;
+    color: var(--color-neutral-400);
+  }
+</style>

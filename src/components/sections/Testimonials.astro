@@ -1,0 +1,141 @@
+---
+import { Icon } from 'astro-icon/components';
+import { site } from '../../content/site';
+import Avatar from '../ui/Avatar.astro';
+import SectionHeader from '../ui/SectionHeader.astro';
+
+const { testimonials } = site;
+const tones = ['brand', 'accent', 'ink', 'brand'] as const;
+/* Short quotes render as pull quotes so they fill their cell. */
+const SHORT_QUOTE = 160;
+---
+
+<section class="py-section" aria-labelledby="testimonios-title">
+  <div class="container-page">
+    <SectionHeader id="testimonios-title" heading={testimonials.heading} intro={testimonials.intro} />
+
+    <ul class="quotes mt-14 md:mt-16">
+      {
+        testimonials.items.map((item, index) => (
+          <li class="quote card-lift" data-featured={index === 0 ? '' : undefined} data-short={index !== 0 && item.quote.length < SHORT_QUOTE ? '' : undefined} data-reveal style={`--reveal-delay:${index % 2}`}>
+            <figure class="quote-figure">
+              <Icon name="lucide:quote" class="quote-mark" aria-hidden="true" />
+              <blockquote class="quote-text">
+                <p>{item.quote}</p>
+              </blockquote>
+              <figcaption class="quote-author">
+                <Avatar initials={item.initials} tone={tones[index % tones.length]} />
+                <span class="flex flex-col">
+                  <span class="font-semibold text-ink">{item.name}</span>
+                  <span class="text-sm text-neutral-600">{item.detail}</span>
+                </span>
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .quotes {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 48rem) {
+    .quotes {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .quote[data-featured],
+    .quote:nth-child(4) {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .quotes {
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.25rem;
+    }
+
+    .quote:nth-child(1) {
+      grid-column: 1 / span 4;
+    }
+
+    /* Short quote pairs with the long featured one; the bottom pair has similar lengths. */
+    .quote:nth-child(2) {
+      grid-column: 5 / span 2;
+    }
+
+    .quote:nth-child(3) {
+      grid-column: 1 / span 3;
+    }
+
+    .quote:nth-child(4) {
+      grid-column: 4 / span 3;
+    }
+  }
+
+  .quote {
+    display: flex;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 8%, transparent);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .quote[data-featured] {
+    background-color: var(--color-brand-tint);
+    border-color: color-mix(in oklab, var(--color-brand) 22%, transparent);
+  }
+
+  .quote-figure {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.75rem;
+    width: 100%;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .quote-figure :global(.quote-mark) {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-brand);
+    stroke-width: 1.75;
+  }
+
+  .quote-text {
+    flex: 1;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    color: var(--color-neutral-800);
+  }
+
+  [data-featured] .quote-text {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 2.4vw, 2rem);
+    font-weight: 560;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+
+  [data-short] .quote-text {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 2.2vw, 1.875rem);
+    font-weight: 560;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+
+  .quote-author {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+</style>

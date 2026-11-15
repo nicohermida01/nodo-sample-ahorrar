@@ -1,0 +1,23 @@
+---
+interface Props {
+  id: string;
+  heading: string;
+  intro?: string;
+  align?: 'start' | 'center';
+  class?: string;
+}
+
+const { id, heading, intro, align = 'start', class: className } = Astro.props;
+---
+
+<div
+  class:list={[
+    'flex max-w-3xl flex-col gap-5',
+    align === 'center' && 'mx-auto items-center text-center',
+    className,
+  ]}
+  data-reveal
+>
+  <h2 id={id} class="font-display text-title text-ink">{heading}</h2>
+  {intro && <p class="max-w-prose text-lead text-neutral-600">{intro}</p>}
+</div>

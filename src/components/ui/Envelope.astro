@@ -1,0 +1,375 @@
+---
+/**
+ * An open budget envelope: one triangular flap, a paper pocket with a
+ * label tag, and a fill whose height shows what is left inside.
+ * Pass `from` to animate the envelope draining from that amount on load
+ * (the hero signature); the markup always renders the final state.
+ */
+import { Icon } from 'astro-icon/components';
+import type { EnvelopeData } from '../../content/site';
+import { site } from '../../content/site';
+import { formatMoney, ratio } from '../../lib/format';
+
+interface Props {
+  envelope: EnvelopeData;
+  from?: number;
+  delta?: number;
+  align?: 'start' | 'end';
+  tone?: 'surface' | 'tint';
+  /** Defaults to 'low' when less than site.envelopeLowThreshold is left. */
+  state?: 'ok' | 'low';
+  showBudget?: boolean;
+  /** Overrides the default "remaining" label (e.g. for savings goals). */
+  label?: string;
+  class?: string;
+}
+
+const {
+  envelope,
+  from,
+  delta,
+  align = 'start',
+  tone = 'surface',
+  state,
+  showBudget = true,
+  label,
+  class: className,
+} = Astro.props;
+
+const { remaining, budget, name, number } = envelope;
+const fill = ratio(remaining, budget);
+const fromFill = from === undefined ? fill : ratio(from, budget);
+const labels = site.envelopeLabels;
+const resolvedState = state ?? (fill < site.envelopeLowThreshold ? 'low' : 'ok');
+---
+
+<div
+  class:list={['envelope', className]}
+  data-align={align}
+  data-tone={tone}
+  data-state={resolvedState}
+  data-draining={from === undefined ? undefined : ''}
+  style={`--fill:${fill.toFixed(4)};--from:${fromFill.toFixed(4)}`}
+>
+  <div class="envelope-inner">
+    <svg class="envelope-flap" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path d="M0.5 30 50 0.75 99.5 30Z" vector-effect="non-scaling-stroke"></path>
+    </svg>
+    <div class="envelope-bills" aria-hidden="true">
+      <span></span>
+      <span></span>
+    </div>
+    <div class="envelope-pocket">
+      <span class="envelope-level" aria-hidden="true"></span>
+      <svg class="envelope-folds" viewBox="0 0 100 62" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <path d="M0 62 50 30 100 62" vector-effect="non-scaling-stroke"></path>
+      </svg>
+      <span class="envelope-head">
+        <span class="envelope-tag tag-label">
+          <span>{name}</span>
+          {number && <span class="envelope-tag-number tabular">{number}</span>}
+        </span>
+        {
+          resolvedState === 'low' && (
+            <span class="envelope-flag">
+              <Icon name="lucide:triangle-alert" aria-hidden="true" />
+              {labels.low}
+            </span>
+          )
+        }
+      </span>
+      <span class="envelope-body">
+        <span class="envelope-meta">{label ?? labels.remaining}</span>
+        <span
+          class="envelope-amount tabular"
+          data-envelope-amount={from === undefined ? undefined : ''}
+          data-from={from}
+          data-to={remaining}
+          data-prefix={site.currencySymbol}
+          data-locale={site.locale}
+        >
+          {formatMoney(remaining)}
+        </span>
+        {
+          showBudget && (
+            <span class="envelope-meta envelope-budget tabular">
+              {labels.of} {formatMoney(budget)}
+            </span>
+          )
+        }
+      </span>
+    </div>
+      {
+        delta !== undefined && (
+          <span class="envelope-delta tabular" aria-hidden="true">
+            {`${labels.spentPrefix}${formatMoney(delta)}`}
+          </span>
+        )
+      }
+  </div>
+</div>
+
+<style>
+  .envelope {
+    container-type: inline-size;
+    position: relative;
+  }
+
+  .envelope-inner {
+    position: relative;
+    padding-top: 30cqi;
+  }
+
+  .envelope-flap {
+    position: absolute;
+    inset: 0 0 auto;
+    width: 100%;
+    height: calc(30cqi + 1px);
+    overflow: visible;
+  }
+
+  .envelope-flap path {
+    fill: var(--color-neutral-50);
+    stroke: color-mix(in oklab, var(--color-ink) 12%, transparent);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  [data-tone='tint'] .envelope-flap path {
+    fill: var(--color-brand-tint);
+  }
+
+  /* Bills peek out of the pocket; how far they rise follows --fill. */
+  .envelope-bills {
+    position: absolute;
+    inset-inline: 10%;
+    top: 14cqi;
+    height: 46cqi;
+    translate: 0 calc((1 - var(--fill)) * 20cqi);
+  }
+
+  .envelope-bills span {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.6cqi;
+    background-color: var(--color-brand);
+    box-shadow:
+      inset 0 0 0 1.4cqi var(--color-brand),
+      inset 0 0 0 1.9cqi color-mix(in oklab, var(--color-surface) 45%, transparent);
+  }
+
+  .envelope-bills span:first-child {
+    rotate: -4deg;
+    translate: -3cqi 1.5cqi;
+    background-color: var(--color-brand-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 30%, transparent);
+  }
+
+  .envelope-pocket {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3cqi;
+    /* 1.6:1 pocket that may grow with its content instead of clipping it. */
+    min-height: 62.5cqi;
+    padding: 6cqi 7cqi;
+    border-radius: 3cqi;
+    background-color: var(--color-surface);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 9%, transparent),
+      var(--shadow-md);
+  }
+
+  [data-tone='tint'] .envelope-pocket {
+    background-color: var(--color-paper);
+  }
+
+  /* Remaining balance as height: a solid fill with a strong top edge. */
+  .envelope-level {
+    position: absolute;
+    inset: auto 0 0;
+    height: calc(var(--fill) * 100%);
+    transform-origin: 50% 100%;
+    border-radius: 0 0 3cqi 3cqi;
+    background-color: var(--color-envelope-fill);
+    box-shadow: inset 0 2px 0 var(--color-brand);
+  }
+
+  /* Low: hatched fill + flag word, never color alone. */
+  [data-state='low'] .envelope-level {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 4px,
+      var(--color-envelope-hatch) 4px 6px
+    );
+  }
+
+  .envelope-head {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5cqi;
+  }
+
+  [data-align='end'] .envelope-head {
+    align-items: flex-end;
+  }
+
+  .envelope-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 1cqi;
+    padding: 1.4cqi 2.4cqi;
+    border-radius: 9999px;
+    background-color: var(--color-brand-soft);
+    color: var(--color-brand-strong);
+    font-size: max(0.625rem, 4.6cqi);
+    font-weight: 650;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .envelope-flag :global(svg) {
+    width: 1.15em;
+    height: 1.15em;
+  }
+
+  .envelope-folds {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .envelope-folds path {
+    fill: none;
+    stroke: color-mix(in oklab, var(--color-ink) 7%, transparent);
+    stroke-width: 1;
+  }
+
+  .envelope-head {
+    align-self: flex-start;
+  }
+
+  .envelope-tag {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 2cqi;
+    padding: 1.8cqi 2.6cqi;
+    border-radius: var(--radius-tag);
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-size: max(0.625rem, 4.8cqi);
+  }
+
+  .envelope-tag-number {
+    color: var(--color-brand-soft);
+  }
+
+  /* Money sits on an opaque paper label, so the fill edge passes
+     behind it and never strikes through text at any fill level. */
+  .envelope-body {
+    position: relative;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5cqi;
+    padding: 2.4cqi 3.4cqi 2.8cqi;
+    border-radius: 2.4cqi;
+    background-color: var(--color-surface);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent),
+      var(--shadow-sm);
+  }
+
+  [data-align='end'] .envelope-head {
+    align-self: flex-end;
+  }
+
+  [data-align='end'] .envelope-body {
+    align-self: flex-end;
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .envelope-meta {
+    font-size: max(0.6875rem, 5.2cqi);
+    line-height: 1.2;
+    color: var(--color-neutral-600);
+  }
+
+  .envelope-amount {
+    font-family: var(--font-display);
+    font-size: max(1.125rem, 12cqi);
+    font-weight: 740;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--color-ink);
+  }
+
+  .envelope-delta {
+    position: absolute;
+    z-index: 1;
+    top: 4cqi;
+    right: 4cqi;
+    padding: 1.6cqi 2.6cqi;
+    border-radius: 9999px;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-size: max(0.6875rem, 5cqi);
+    font-weight: 600;
+    opacity: 0;
+  }
+
+  @container (width < 170px) {
+    .envelope-budget {
+      display: none;
+    }
+  }
+
+  /* Drain: from the `from` amount down to the final state. */
+  @media (prefers-reduced-motion: no-preference) {
+    [data-draining] .envelope-level {
+      animation: envelope-level 900ms var(--ease-out-expo) var(--drain-delay, 0s) both;
+    }
+
+    [data-draining] .envelope-bills {
+      animation: envelope-bills 900ms var(--ease-out-expo) var(--drain-delay, 0s) both;
+    }
+
+    [data-draining] .envelope-delta {
+      animation: envelope-delta 1600ms var(--ease-out-expo) var(--drain-delay, 0s) both;
+    }
+  }
+
+  @keyframes envelope-level {
+    from {
+      transform: scaleY(calc(var(--from) / max(var(--fill), 0.0001)));
+    }
+  }
+
+  @keyframes envelope-bills {
+    from {
+      translate: 0 calc((1 - var(--from)) * 20cqi);
+    }
+  }
+
+  @keyframes envelope-delta {
+    0% {
+      opacity: 0;
+      transform: translateY(2cqi);
+    }
+    20%,
+    70% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-3cqi);
+    }
+  }
+</style>

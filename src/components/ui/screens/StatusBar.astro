@@ -1,0 +1,13 @@
+---
+import { Icon } from 'astro-icon/components';
+import { site } from '../../../content/site';
+---
+
+<div class="scr-status" aria-hidden="true">
+  <span class="tabular">{site.mockupTime}</span>
+  <span class="scr-status-icons">
+    <Icon name="lucide:signal" />
+    <Icon name="lucide:wifi" />
+    <Icon name="lucide:battery-full" />
+  </span>
+</div>

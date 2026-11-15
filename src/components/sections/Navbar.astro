@@ -1,0 +1,184 @@
+---
+import { Icon } from 'astro-icon/components';
+import { site } from '../../content/site';
+import Logo from '../ui/Logo.astro';
+
+const { nav } = site;
+---
+
+<header class="navbar">
+  <div class="container-page flex h-nav items-center justify-between gap-6">
+    <a href="#top" class="rounded-md" aria-label={nav.homeLabel}>
+      <Logo />
+    </a>
+
+    <nav aria-label={nav.label} class="hidden md:block">
+      <ul class="flex items-center gap-8 text-[0.9375rem] font-medium text-neutral-700">
+        {
+          nav.links.map((link) => (
+            <li>
+              <a href={link.href} class="link-reveal hover:text-ink">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a href={nav.cta.href} class="nav-cta">{nav.cta.label}</a>
+      <button
+        type="button"
+        class="nav-toggle md:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+        data-label-open={nav.openLabel}
+        data-label-close={nav.closeLabel}
+      >
+        <span class="sr-only" data-menu-label>{nav.openLabel}</span>
+        <Icon name="lucide:menu" class="nav-toggle-open" aria-hidden="true" />
+        <Icon name="lucide:x" class="nav-toggle-close" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-menu" class="mobile-menu md:hidden" aria-label={nav.label} hidden data-menu>
+    <ul class="container-page flex flex-col py-4">
+      {
+        nav.links.map((link) => (
+          <li>
+            <a href={link.href} class="mobile-link">
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const label = toggle?.querySelector<HTMLElement>('[data-menu-label]');
+
+  if (toggle && menu) {
+    const setOpen = (open: boolean, returnFocus = false) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+      if (label) label.textContent = (open ? toggle.dataset.labelClose : toggle.dataset.labelOpen) ?? '';
+      if (open) menu.querySelector<HTMLAnchorElement>('a')?.focus();
+      else if (returnFocus) toggle.focus();
+    };
+
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+
+    menu.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !menu.hidden) setOpen(false, true);
+    });
+
+    document.addEventListener('focusin', (event) => {
+      const header = toggle.closest('header');
+      if (!menu.hidden && header && !header.contains(event.target as Node)) setOpen(false);
+    });
+
+    window.matchMedia('(min-width: 48rem)').addEventListener('change', (event) => {
+      if (event.matches) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .navbar {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background-color: color-mix(in oklab, var(--color-paper) 94%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+  }
+
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0 1.125rem;
+    border-radius: 9999px;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      background-color var(--duration-fast) var(--ease-out-expo),
+      transform var(--duration-base) var(--ease-out-expo);
+  }
+
+  .nav-cta:hover {
+    background-color: var(--color-neutral-800);
+    transform: scale(1.03);
+  }
+
+  .nav-cta:focus-visible,
+  .nav-toggle:focus-visible {
+    border-radius: 9999px;
+  }
+
+  .nav-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    color: var(--color-ink);
+    transition: background-color var(--duration-fast) var(--ease-out-expo);
+  }
+
+  @media (min-width: 48rem) {
+    .nav-toggle {
+      display: none;
+    }
+  }
+
+  .nav-toggle:hover {
+    background-color: var(--color-neutral-100);
+  }
+
+  .nav-toggle :global(svg) {
+    grid-area: 1 / 1;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .nav-toggle[aria-expanded='true'] :global(.nav-toggle-open),
+  .nav-toggle[aria-expanded='false'] :global(.nav-toggle-close) {
+    display: none;
+  }
+
+  .mobile-menu {
+    border-top: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+    background-color: var(--color-paper);
+    box-shadow: var(--shadow-md);
+  }
+
+  .mobile-link {
+    display: block;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 680;
+    letter-spacing: -0.025em;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  li:last-child .mobile-link {
+    border-bottom: 0;
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+import { site } from '../../content/site';
+import { formatNumber } from '../../lib/format';
+
+const { proof } = site;
+const formatSegment = (segment: (typeof proof.segments)[number]) =>
+  segment.kind === 'text'
+    ? segment.value
+    : `${formatNumber(segment.value, segment.decimals)}${segment.suffix ?? ''}`;
+const sentence = proof.segments.map(formatSegment).join(' ');
+---
+
+<section class="proof" aria-labelledby="proof-title">
+  <div class="container-page py-16 md:py-20">
+    <h2 id="proof-title" class="sr-only">{proof.heading}</h2>
+    <p class="sr-only">{sentence}</p>
+    <p class="proof-sentence" aria-hidden="true" data-reveal="fade">
+      {
+        proof.segments.map((segment) =>
+          segment.kind === 'text' ? (
+            <span>{` ${segment.value} `}</span>
+          ) : (
+            <span class="proof-metric tabular">
+              <span
+                data-count
+                data-value={segment.value}
+                data-decimals={segment.decimals}
+                data-locale={site.locale}
+              >
+                {formatNumber(segment.value, segment.decimals)}
+              </span>
+              {segment.suffix}
+            </span>
+          ),
+        )
+      }
+    </p>
+  </div>
+</section>
+
+<script>
+  const counters = document.querySelectorAll<HTMLElement>('[data-count]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (counters.length && !reduce && 'IntersectionObserver' in window) {
+    const animate = (el: HTMLElement) => {
+      const value = Number(el.dataset.value);
+      const decimals = Number(el.dataset.decimals ?? 0);
+      const format = new Intl.NumberFormat(el.dataset.locale, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+      const duration = 1400;
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 4);
+        el.textContent = format.format(value * eased);
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          animate(entry.target as HTMLElement);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.6 },
+    );
+
+    counters.forEach((el) => observer.observe(el));
+  }
+</script>
+
+<style>
+  .proof {
+    background-color: var(--color-surface);
+    border-block: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+  }
+
+  .proof-sentence {
+    max-width: 58rem;
+    font-family: var(--font-display);
+    font-size: var(--text-statement);
+    line-height: 1.35;
+    letter-spacing: var(--text-statement--letter-spacing);
+    font-weight: 500;
+    color: var(--color-neutral-600);
+    text-wrap: pretty;
+  }
+
+  .proof-metric {
+    display: inline-block;
+    padding: 0 0.28em;
+    border-radius: var(--radius-tag);
+    background-color: var(--color-brand-tint);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 28%, transparent);
+    color: var(--color-ink);
+    font-weight: 740;
+    white-space: nowrap;
+  }
+</style>

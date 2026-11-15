@@ -1,0 +1,81 @@
+---
+import { Icon } from 'astro-icon/components';
+import { site } from '../../content/site';
+
+interface Props {
+  store: 'appStore' | 'googlePlay';
+  class?: string;
+}
+
+const { store, class: className } = Astro.props;
+const copy = site.storeBadges[store];
+const href = site.stores[store];
+const icon = store === 'appStore' ? 'simple-icons:apple' : 'simple-icons:googleplay';
+---
+
+<a href={href} class:list={['store-badge', className]}>
+  <Icon name={icon} class="store-badge-icon" aria-hidden="true" />
+  <span class="store-badge-text">
+    <span class="store-badge-caption">{copy.caption}</span>
+    <span class="store-badge-store">{copy.store}</span>
+  </span>
+</a>
+
+<style>
+  .store-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.5rem;
+    padding: 0.5rem 1.5rem 0.5rem 1.125rem;
+    border-radius: 9999px;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    transition:
+      background-color var(--duration-fast) var(--ease-out-expo),
+      transform var(--duration-base) var(--ease-out-expo),
+      box-shadow var(--duration-base) var(--ease-out-expo);
+  }
+
+  .store-badge:hover {
+    background-color: var(--color-neutral-800);
+    transform: scale(1.03);
+    box-shadow: var(--shadow-md);
+  }
+
+  .store-badge:active {
+    transform: scale(0.98);
+  }
+
+  .store-badge:focus-visible {
+    border-radius: 9999px;
+  }
+
+  .store-badge :global(.store-badge-icon) {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+  }
+
+  .store-badge-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    text-align: left;
+  }
+
+  .store-badge-caption {
+    font-size: 0.6875rem;
+    letter-spacing: 0.01em;
+    color: var(--color-neutral-200);
+  }
+
+  .store-badge-store {
+    font-family: var(--font-display);
+    font-size: 1.1875rem;
+    font-weight: 680;
+    letter-spacing: -0.02em;
+  }
+</style>

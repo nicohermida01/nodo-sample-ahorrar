@@ -1,0 +1,15 @@
+---
+import { site } from '../../content/site';
+import StoreBadge from './StoreBadge.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div role="group" aria-label={site.storeBadges.groupLabel} class:list={['flex flex-wrap gap-3', className]}>
+  <StoreBadge store="appStore" />
+  <StoreBadge store="googlePlay" />
+</div>

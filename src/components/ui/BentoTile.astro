@@ -1,0 +1,58 @@
+---
+interface Props {
+  title: string;
+  body: string;
+  /** Position in its row, used to stagger the reveal. */
+  index?: number;
+  /** `row` puts copy and demo side by side from md up. */
+  layout?: 'col' | 'row';
+  class?: string;
+}
+
+const { title, body, index = 0, layout = 'col', class: className } = Astro.props;
+---
+
+<article
+  class:list={['tile card-lift', className]}
+  data-layout={layout}
+  data-reveal
+  style={`--reveal-delay:${index}`}
+>
+  <div class="tile-copy">
+    <h3 class="font-display text-heading font-semibold text-ink">{title}</h3>
+    <p class="text-[0.9375rem] leading-relaxed text-neutral-600">{body}</p>
+  </div>
+  <div class="tile-demo">
+    <slot />
+  </div>
+</article>
+
+<style>
+  .tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border: 1px solid color-mix(in oklab, var(--color-ink) 8%, transparent);
+    border-radius: var(--radius-panel);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tile-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    max-width: 32rem;
+  }
+
+  @media (min-width: 48rem) {
+    .tile[data-layout='row'] {
+      display: grid;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      align-items: end;
+    }
+  }
+</style>

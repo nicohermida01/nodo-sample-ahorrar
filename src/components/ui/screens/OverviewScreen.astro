@@ -1,0 +1,128 @@
+---
+import '../../../styles/screens.css';
+import { site } from '../../../content/site';
+import { formatMoney, ratio } from '../../../lib/format';
+import StatusBar from './StatusBar.astro';
+
+const screen = site.howItWorks.overviewScreen;
+const total = screen.envelopes.reduce((sum, envelope) => sum + (envelope.remaining ?? 0), 0);
+---
+
+<div class="scr">
+  <StatusBar />
+  <p class="scr-title">{screen.title}</p>
+
+  <div class="overview-total">
+    <span class="scr-muted">{screen.totalLabel}</span>
+    <span class="scr-amount overview-total-value">{formatMoney(total)}</span>
+    <span class="overview-days">{screen.daysLeft}</span>
+  </div>
+
+  <div class="overview-grid">
+    {
+      screen.envelopes.map((envelope) => {
+        const value = ratio(envelope.remaining ?? 0, envelope.amount);
+        return (
+          <div class="scr-card overview-env" data-low={value < 0.2 ? '' : undefined}>
+            <span class="overview-env-level" style={`--value:${value}`} />
+            <span class="overview-env-name">{envelope.name}</span>
+            <span class="scr-num overview-env-amount">{formatMoney(envelope.remaining ?? 0)}</span>
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <div class="scr-card overview-recent">
+    <p class="scr-overline">{screen.recentTitle}</p>
+    {
+      screen.recent.map((row) => (
+        <div class="scr-row">
+          <span class="scr-row-label">
+            {row.label}
+            <small>{row.envelope}</small>
+          </span>
+          <span class="scr-num">{formatMoney(-row.amount)}</span>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .overview-recent {
+    padding: 0.6em 1em 0.2em;
+  }
+
+  .overview-total {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+  }
+
+  .overview-total-value {
+    font-size: 2.5em;
+  }
+
+  .overview-days {
+    align-self: flex-start;
+    padding: 0.35em 0.75em;
+    border-radius: 9999px;
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5em;
+  }
+
+  .overview-env {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.6em;
+    min-height: 6.4em;
+    padding: 0.75em;
+    overflow: hidden;
+  }
+
+  .overview-env-level {
+    position: absolute;
+    inset: auto 0 0;
+    height: calc(var(--value) * 100%);
+    background-color: var(--color-envelope-fill);
+    box-shadow: inset 0 2px 0 var(--color-brand);
+  }
+
+  [data-low] .overview-env-level {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 3px,
+      var(--color-envelope-hatch) 3px 5px
+    );
+  }
+
+  .overview-env-name {
+    position: relative;
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Opaque label: the fill edge never crosses the amount. */
+  .overview-env-amount {
+    position: relative;
+    align-self: flex-start;
+    padding: 0.2em 0.45em;
+    border-radius: 0.45em;
+    background-color: var(--color-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent);
+    font-size: 1.1em;
+  }
+</style>

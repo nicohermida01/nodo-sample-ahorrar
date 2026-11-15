@@ -1,0 +1,539 @@
+---
+import { Icon } from 'astro-icon/components';
+import { site } from '../../content/site';
+import { formatMoney, ratio } from '../../lib/format';
+import BentoTile from '../ui/BentoTile.astro';
+import Envelope from '../ui/Envelope.astro';
+import SectionHeader from '../ui/SectionHeader.astro';
+
+const { features } = site;
+const { envelopes, twoTaps, autoCategory, monthBar, alerts, goal } = features;
+const spentRatio = ratio(monthBar.spent, monthBar.budget);
+const timeRatio = ratio(monthBar.today, monthBar.days);
+---
+
+<section id="funciones" class="py-section" aria-labelledby="funciones-title">
+  <div class="container-page">
+    <SectionHeader id="funciones-title" heading={features.heading} intro={features.intro} />
+
+    <div class="bento mt-14 md:mt-16">
+      <BentoTile class="tile-envelopes" title={envelopes.title} body={envelopes.body} index={0}>
+        <div class="envelope-row">
+          {
+            envelopes.items.map((item, i) => (
+              <Envelope
+                envelope={item}
+                class:list={['envelope-row-item', `envelope-row-item-${i}`]}
+              />
+            ))
+          }
+        </div>
+      </BentoTile>
+
+      <BentoTile class="tile-taps" title={twoTaps.title} body={twoTaps.body} index={1}>
+        <ol class="taps">
+          {
+            twoTaps.steps.map((step, i) => (
+              <li class="taps-step">
+                <span class="taps-index tabular">{i + 1}</span>
+                <span class="taps-detail">{step.detail}</span>
+                <span class:list={['taps-pill', i === twoTaps.steps.length - 1 && 'taps-pill-ink']}>{step.label}</span>
+              </li>
+            ))
+          }
+          <li class="taps-done">
+            <Icon name="lucide:circle-check" aria-hidden="true" />
+            {twoTaps.doneLabel}
+          </li>
+        </ol>
+      </BentoTile>
+
+      <BentoTile class="tile-auto" title={autoCategory.title} body={autoCategory.body} index={2}>
+        <ul class="rules">
+          {
+            autoCategory.rules.map((rule) => (
+              <li class="rule">
+                <span class="rule-typed">{rule.typed}</span>
+                <Icon name="lucide:arrow-right" class="rule-arrow" aria-hidden="true" />
+                <span class="rule-chip tag-label">{rule.envelope}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </BentoTile>
+
+      <BentoTile class="tile-month" title={monthBar.title} body={monthBar.body} index={1}>
+        <div class="month" style={`--spent:${spentRatio};--today:${timeRatio}`}>
+          <div class="month-top">
+            <span class="month-amount tabular">
+              {formatMoney(monthBar.spent)}
+              <span class="month-of">
+                {site.envelopeLabels.of} {formatMoney(monthBar.budget)} {monthBar.spentLabel}
+              </span>
+            </span>
+            <span class="month-pace">
+              <Icon name="lucide:circle-check" aria-hidden="true" />
+              {monthBar.paceLabel}
+            </span>
+          </div>
+          <div class="month-track" aria-hidden="true">
+            <span class="month-fill"></span>
+            <span class="month-ticks">
+              {Array.from({ length: monthBar.days }, (_, i) => <span data-past={i < monthBar.today ? '' : undefined} />)}
+            </span>
+            <span class="month-today"></span>
+          </div>
+          <span class="month-day tabular">{monthBar.todayLabel}</span>
+        </div>
+      </BentoTile>
+
+      <BentoTile class="tile-alerts" title={alerts.title} body={alerts.body} index={0}>
+        <ul class="alerts">
+          {
+            alerts.items.map((item) => (
+              <li class="alert" data-state={item.state}>
+                <span class="alert-head">
+                  <span class="alert-name">{item.envelope}</span>
+                  <span class="alert-state">
+                    <Icon
+                      name={item.state === 'low' ? 'lucide:triangle-alert' : 'lucide:circle-check'}
+                      aria-hidden="true"
+                    />
+                    {item.stateLabel}
+                  </span>
+                </span>
+                <span class="alert-bar">
+                  <span style={`--value:${ratio(item.remaining, item.budget)}`} />
+                </span>
+                <span class="alert-amount tabular">
+                  {site.envelopeLabels.remaining} {formatMoney(item.remaining)} {site.envelopeLabels.of}{' '}
+                  {formatMoney(item.budget)}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </BentoTile>
+
+      <BentoTile class="tile-goal" title={goal.title} body={goal.body} index={1}>
+        <div class="goal">
+          <Envelope
+            envelope={{ name: goal.goalName, number: '', remaining: goal.saved, budget: goal.target }}
+            tone="tint"
+            label={goal.savedLabel}
+            class="goal-envelope"
+          />
+          <div class="goal-copy">
+            <span class="goal-of">{goal.missingLabel}</span>
+            <span class="goal-amount tabular">{formatMoney(Math.max(0, goal.target - goal.saved))}</span>
+            <span class="goal-plan">{goal.plan}</span>
+          </div>
+        </div>
+      </BentoTile>
+    </div>
+  </div>
+</section>
+
+<style>
+  .bento {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 48rem) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bento :global(.tile-envelopes),
+    .bento :global(.tile-month),
+    .bento :global(.tile-alerts),
+    .bento :global(.tile-goal) {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .bento {
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.25rem;
+    }
+
+    .bento :global(.tile-envelopes) {
+      grid-column: 1 / span 4;
+    }
+
+    .bento :global(.tile-taps) {
+      grid-column: 5 / span 2;
+    }
+
+    .bento :global(.tile-auto),
+    .bento :global(.tile-alerts) {
+      grid-column: 1 / span 2;
+    }
+
+    .bento :global(.tile-month),
+    .bento :global(.tile-goal) {
+      grid-column: 3 / span 4;
+    }
+  }
+
+  /* Envelopes tile */
+  .envelope-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
+    gap: clamp(0.5rem, 2vw, 1.5rem);
+    padding-top: 1rem;
+  }
+
+  .envelope-row :global(.envelope-row-item-1) {
+    translate: 0 -0.75rem;
+  }
+
+  /* Small screens: two per row, the third centered below; all stay visible. */
+  @media (max-width: 30rem) {
+    .envelope-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: 1.5rem;
+    }
+
+    .envelope-row :global(.envelope-row-item) {
+      width: calc(50% - 0.375rem);
+    }
+
+    .envelope-row :global(.envelope-row-item-1) {
+      translate: none;
+    }
+  }
+
+  /* Two taps tile */
+  .taps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .taps-step {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.625rem 0.625rem 0.75rem;
+    border-radius: var(--radius-control);
+    background-color: var(--color-paper);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent);
+    font-size: 0.875rem;
+  }
+
+  .taps-index {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background-color: var(--color-brand);
+    color: var(--color-ink);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .taps-detail {
+    color: var(--color-neutral-600);
+  }
+
+  .taps-pill {
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    background-color: var(--color-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 14%, transparent);
+    font-weight: 600;
+  }
+
+  .taps-pill-ink {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    box-shadow: none;
+  }
+
+  .taps-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    align-self: flex-start;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .taps-done :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Auto category tile */
+  .rules {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .rule {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-control);
+    background-color: var(--color-paper);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .rule :global(.rule-arrow) {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-neutral-500);
+  }
+
+  .rule-chip {
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-tag);
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 0.625rem;
+  }
+
+  /* Alerts tile: state carried by word + icon + pattern, not color alone */
+  .alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .alert {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .alert-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .alert-name {
+    font-weight: 600;
+  }
+
+  .alert-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .alert-state :global(svg) {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  [data-state='low'] .alert-state {
+    background-color: var(--color-brand-soft);
+    color: var(--color-brand-strong);
+  }
+
+  .alert-bar {
+    position: relative;
+    height: 0.625rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: var(--color-neutral-100);
+  }
+
+  .alert-bar > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--value) * 100%);
+    border-radius: inherit;
+    background-color: var(--color-accent);
+  }
+
+  [data-state='low'] .alert-bar > span {
+    min-width: 0.625rem;
+    background-color: var(--color-brand);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 3px,
+      color-mix(in oklab, var(--color-ink) 35%, transparent) 3px 5px
+    );
+  }
+
+  .alert-amount {
+    font-size: 0.8125rem;
+    color: var(--color-neutral-600);
+  }
+
+  /* Month tile */
+  .month {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .month-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .month-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 740;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .month-of {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 450;
+    letter-spacing: 0;
+    color: var(--color-neutral-600);
+  }
+
+  .month-pace {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .month-pace :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .month-track {
+    position: relative;
+    height: 3rem;
+    border-radius: var(--radius-control);
+    background-color: var(--color-paper);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 8%, transparent);
+    overflow: hidden;
+  }
+
+  .month-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--spent) * 100%);
+    background-color: var(--color-brand-soft);
+    box-shadow: inset -2px 0 0 var(--color-brand);
+  }
+
+  .month-ticks {
+    position: absolute;
+    inset: 0.75rem 0.5rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .month-ticks span {
+    width: 2px;
+    border-radius: 2px;
+    background-color: color-mix(in oklab, var(--color-ink) 14%, transparent);
+  }
+
+  .month-ticks span[data-past] {
+    background-color: color-mix(in oklab, var(--color-ink) 45%, transparent);
+  }
+
+  .month-today {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    left: calc(0.5rem + var(--today) * (100% - 1rem));
+    width: 3px;
+    border-radius: 3px;
+    background-color: var(--color-ink);
+  }
+
+  .month-day {
+    align-self: flex-start;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-neutral-700);
+  }
+
+  /* Goal tile */
+  .goal {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) 1fr;
+    align-items: end;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+  }
+
+  .goal-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .goal-amount {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 760;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .goal-of {
+    color: var(--color-neutral-600);
+  }
+
+  .goal-plan {
+    margin-top: 0.75rem;
+    align-self: flex-start;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 30rem) {
+    .goal {
+      grid-template-columns: 1fr;
+    }
+
+    .goal :global(.goal-envelope) {
+      max-width: 13rem;
+    }
+  }
+</style>
