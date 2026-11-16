@@ -7,7 +7,7 @@ import icon from 'astro-icon';
 // https://astro.build/config
 export default defineConfig({
   // Placeholder: replace with the production domain when rebranding.
-  site: 'https://ahorrar.example.com',
+  site: 'https://nodo-sample-ahorrar.vercel.app',
   output: 'static',
   integrations: [
     icon({ iconDir: 'src/assets/icons' }),

@@ -270,7 +270,7 @@ export const site: SiteConfig = {
     'AhorrAr reparte tu presupuesto del mes en sobres. Anotás cada gasto en dos toques y ves al instante cuánto te queda en cada uno.',
   locale: 'es-AR',
   currencySymbol: '$',
-  url: 'https://ahorrar.example.com',
+  url: 'https://nodo-sample-ahorrar.vercel.app',
   /* Browser UI color (meta theme-color). Keep in sync with --color-paper. */
   themeColor: '#FAFAF9',
   stores: {
